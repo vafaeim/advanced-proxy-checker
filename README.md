@@ -1,57 +1,54 @@
 # Advanced Proxy Latency Checker
 
-## Project Overview
+<p align="center">
+  <a href="https://github.com/vafaeim/advanced-proxy-checker/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/vafaeim/advanced-proxy-checker?style=for-the-badge&color=yellow">
+  </a>
+  <a href="#">
+    <img alt="Python Version" src="https://img.shields.io/badge/python-3.7+-blue.svg?style=for-the-badge">
+  </a>
+  <a href="#">
+    <img alt="Version" src="https://img.shields.io/badge/version-7.0.1-brightgreen.svg?style=for-the-badge">
+  </a>
+</p>
 
-The Advanced Proxy Latency Checker is a robust, high-performance software utility designed for network administrators, developers, and security professionals. It provides a comprehensive solution for testing and evaluating proxy servers. The tool is engineered to handle large lists of proxies efficiently, leveraging concurrent processing to deliver rapid results.
+<p align="center">
+  A high-performance, concurrent proxy checker with a feature-rich command-line interface (CLI) and an intuitive, modern graphical user interface (GUI).
+</p>
 
-This project offers two distinct interfaces: a full-featured Graphical User Interface (GUI) for interactive use and a powerful Command-Line Interface (CLI) optimized for scripting, automation, and integration into larger workflows. The primary function is to measure critical performance metrics, including latency (ping) and jitter, and to enrich this data with geolocation information.
+---
 
-## Core Features
+This tool is engineered for developers, network administrators, and security professionals who need a powerful and reliable utility for testing and evaluating proxy servers. It handles large proxy lists with exceptional speed by leveraging a multi-threaded architecture. The application features two distinct interfaces: a comprehensive CLI for automation and scripting, and a polished GUI, built with `ttkbootstrap`, for a superior interactive experience.
 
-This utility is built with a focus on performance, accuracy, and usability.
+The application goes beyond simple latency checks, providing metrics on jitter, geolocation, anonymity level, and the performance of proxies when connecting to external domains.
 
-* **High-Concurrency Engine**: The application utilizes a multi-threaded architecture to check hundreds or even thousands of proxies simultaneously, significantly reducing the time required to process large lists.
+## Key Features
 
-* **Dual-Interface Design**:
-    * **Graphical User Interface (GUI)**: An intuitive and responsive interface built with Tkinter, providing real-time feedback, interactive controls for filtering and sorting, and straightforward options for loading and saving proxy lists.
-    * **Command-Line Interface (CLI)**: A comprehensive CLI with full parity, designed for power users and automation. It supports a wide range of arguments for fine-grained control over the checking process and output formats.
+This utility is built with a focus on performance, accuracy, and a professional user experience.
 
-* **Multiple Input Sources**:
-    * **URL**: Fetch proxy lists directly from a remote URL. The GUI is pre-configured with a default URL for immediate use.
-    * **Local File**: Load proxies from a local text file, with one proxy URL per line. The CLI will automatically use `update_proxies.txt` if it exists in the project root and no other input is specified.
-    * **Text Input / Stdin**: Paste proxies directly into the GUI's text area or pipe them into the CLI via standard input.
+* **Modern Graphical User Interface**:
+    * Built with `ttkbootstrap` for a sleek, modern "superhero" dark theme.
+    * **Tabbed Interface**: Settings are neatly organized into "Source," "Connection," and "Filtering & Sorting" tabs, providing an uncluttered and intuitive workflow.
+    * **Live Dashboard**: A real-time dashboard displays key statistics as the scan progresses, including Total, Healthy, and Failed proxy counts.
+    * **Graphical Analysis**: An "Analysis" tab automatically generates a bar chart of the top countries with healthy proxies, offering instant visual insights into your results.
+    * **Configuration Persistence**: The application saves all your settings—including window size, last-used inputs, and filter configurations—to a `config.json` file, restoring your workflow seamlessly on the next launch.
 
-* **Comprehensive Performance Metrics**:
-    * **Latency (Ping)**: Calculates the average round-trip time in milliseconds for multiple connection attempts to each proxy server.
-    * **Jitter**: Measures the standard deviation of the latency measurements, providing a key indicator of connection stability.
+* **Advanced Proxy Testing**:
+    * **High-Concurrency Engine**: Utilizes a multi-threaded architecture to check hundreds or even thousands of proxies simultaneously.
+    * **Pause & Resume Functionality**: Gives you full control to pause long scans and resume them later.
+    * **Anonymity Level Check**: Determines if a proxy is "Elite," "Anonymous," or "Transparent," providing crucial privacy information.
+    * **Ping-Through-Proxy**: Measures the latency not just to the proxy server itself, but also *through* the proxy to specified external domains (e.g., `google.com`), giving a more accurate picture of real-world performance.
+    * **Detailed Information Window**: Double-click any result to open a new window with a detailed breakdown of all its metrics.
 
-* **Geolocation Identification**:
-    * Optionally fetches the geographical location (Country Code and Country Name) for each proxy by resolving its IP address through the ip-api.com service.
+* **Comprehensive Functionality**:
+    * **Multiple Input Sources**: Load proxies from a remote URL, a local file, or by pasting them directly into the text area. The CLI also supports standard input.
+    * **Advanced Filtering**: Filter results by a range of criteria, including max/min ping, included/excluded country codes, and required text in the proxy's secret.
+    * **Flexible Output Formats**: Save filtered and sorted lists of healthy proxies as `.txt`, `.csv`, or `.json`.
+    * **Robust Error Handling**: The GUI and CLI provide specific, user-friendly error messages to help diagnose issues with network connections, URLs, or input files.
 
-* **Advanced Filtering and Sorting**:
-    * Filter results based on a maximum ping threshold to exclude slow proxies.
-    * Filter results by specific ISO 3166-1 alpha-2 country codes.
-    * Limit the output to the top 'N' best-performing proxies based on the selected sorting criteria.
-    * Sort results by either latency or jitter to prioritize speed or stability.
+## Installation
 
-* **Flexible Output Formats**:
-    * Save filtered and sorted lists of healthy proxies in multiple formats:
-        * **Plain Text (.txt)**: A simple list of proxy URLs.
-        * **CSV (.csv)**: A comma-separated values file with detailed metrics in columns.
-        * **JSON (.json)**: A structured JSON array of objects, ideal for programmatic use.
-
-## Project Architecture
-
-The codebase is organized into a clean, modular structure to promote maintainability and separation of concerns.
-
-* `src/core/checker.py`: This module contains the backend logic. All core functionalities, including the `Proxy` data class, latency measurement, geolocation fetching, and URL parsing, are centralized here. This ensures that both the GUI and CLI operate on the same reliable foundation.
-* `src/gui.py`: The implementation of the Tkinter-based Graphical User Interface. It handles user interaction, manages the application state, and invokes the core checker functions in a separate thread to maintain a responsive UI. It imports icon data from `icon.py`.
-* `src/cli.py`: The implementation of the Command-Line Interface. It uses Python's `argparse` module to provide a rich set of commands and options for users who prefer or require a terminal-based workflow.
-* `src/icon.py`: A dedicated module to store the base64-encoded application icon, keeping the main GUI script clean.
-
-## Installation and Setup
-
-The following steps are required to set up the project locally. A Python version of 3.7 or higher is required. The use of a virtual environment is strongly recommended to isolate dependencies and avoid conflicts.
+To get started, clone the repository and install the required dependencies. A virtual environment is highly recommended to avoid conflicts with other projects.
 
 1.  **Clone the Repository**:
     ```bash
@@ -72,7 +69,7 @@ The following steps are required to set up the project locally. A Python version
         ```
 
 3.  **Install Required Dependencies**:
-    The project relies on a small number of external libraries, which are listed in `requirements.txt`. Install them using pip.
+    This version requires `ttkbootstrap` for the GUI and `matplotlib` for the analysis charts.
     ```bash
     pip install -r requirements.txt
     ```
@@ -83,7 +80,7 @@ The application can be executed via its graphical or command-line interface.
 
 ### Graphical User Interface (GUI)
 
-The GUI is designed for ease of use and provides a complete visual toolset for managing the proxy checking process.
+The GUI is designed for a rich, interactive experience and provides a complete visual toolset for managing the proxy checking process.
 
 * **To Launch the GUI**:
     ```bash
@@ -91,15 +88,11 @@ The GUI is designed for ease of use and provides a complete visual toolset for m
     ```
 
 * **Operating the GUI**:
-    1.  **Select Input Source**: Choose between "URL", "File", or "Text" radio buttons.
-        * **URL**: The application defaults to a pre-filled URL containing an updated list of proxies. You may change this to any valid URL.
-        * **File**: Click "Browse..." to select a local `.txt` file containing your proxies.
-        * **Text**: Paste a list of proxy URLs directly into the text field.
-    2.  **Configure Settings**: Adjust the "Ping Count", "Timeout", and "Workers" (concurrent threads) as needed.
-    3.  **Set Filters**: Optionally, enter a "Max Ping" value or a "Top N Results" limit. Check "Fetch & Show Country" to enable geolocation.
-    4.  **Start Scan**: Click the "Start Scan" button to begin the process. The progress bar will indicate the status, and results will populate in the table in real-time.
-    5.  **View and Sort Results**: Click on any column header in the results table to sort the data.
-    6.  **Save Results**: Once the scan is complete, click "Save Results..." to save the filtered list to a `.txt`, `.csv`, or `.json` file.
+    1.  **Configure Settings**: Navigate through the "Source," "Connection," and "Filtering & Sorting" tabs to set up your scan parameters.
+    2.  **Start Scan**: Click the "Start Scan" button. The button will update to "Scanning..." and the dashboard and progress bar will provide live feedback.
+    3.  **Control the Scan**: Use the "Pause"/"Resume" and "Stop" buttons to manage the scanning process.
+    4.  **Analyze Results**: View results in the main table. Double-click any row for details, or switch to the "Analysis" tab to see a graphical breakdown.
+    5.  **Save Results**: Once the scan is complete, use the `File > Save Results...` menu item or the `Ctrl+S` shortcut to save the data.
 
 ### Command-Line Interface (CLI)
 
@@ -110,49 +103,31 @@ The CLI is the preferred method for automation, scripting, and headless environm
     python src/cli.py [input_source] [options]
     ```
 
-* **CLI Arguments**:
-    * `file_path`: (Positional) Path to a file with proxy URLs. Defaults to `update_proxies.txt` if present.
-    * `--url URL`: Fetch proxies from a remote URL.
-    * `--stdin`: Read proxies from standard input.
-    * `--top N`: Limit the output to the top N results.
-    * `--max-ping MS`: Exclude proxies with a ping higher than MS milliseconds.
-    * `--country CC [CC ...]`: Include only proxies from the specified country codes.
-    * `--sort-by {ping,jitter}`: Sort results by the specified metric.
-    * `-o, --output FILE`: Path to save the output file.
-    * `--csv, --json`: Set the output format. Defaults to plain text if not specified.
-    * `--silent`: Suppress all non-error console output.
-    * `-c, --count N`: Number of pings per proxy.
-    * `-t, --timeout S`: Connection timeout in seconds.
-    * `-w, --workers N`: Number of concurrent worker threads.
-    * `--version`: Display the application version.
-    * `--help`: Display the help message with all available commands.
-
 * **CLI Examples**:
 
-    1.  **Check proxies using the default `update_proxies.txt` and display the top 10 fastest results**:
+    1.  **Check proxies using the default `update_proxies.txt`, ping Google through them, and show the top 10 results**:
         ```bash
-        python src/cli.py --top 10
+        python src/cli.py --top 10 --ping-to google.com
         ```
 
-    2.  **Check proxies from the repository's default URL, filter for those in Germany (DE) with a ping under 400ms, and show country info**:
+    2.  **Check proxies from a URL, filtering for elite proxies in Germany (DE) with a ping under 400ms**:
         ```bash
         python src/cli.py --url [https://raw.githubusercontent.com/vafaeim/advanced-proxy-checker/main/update_proxies.txt](https://raw.githubusercontent.com/vafaeim/advanced-proxy-checker/main/update_proxies.txt) --max-ping 400 --country DE
         ```
 
-    3.  **Read proxies from standard input, check them, and save the results as a JSON file**:
+    3.  **Read proxies from standard input and save the results as a JSON file**:
         ```bash
         cat my_proxies.txt | python src/cli.py --stdin --json -o results.json
         ```
 
+    4.  **View all available commands and options**:
+        ```bash
+        python src/cli.py --help
+        ```
+
 ## Default Proxy List
 
-This repository includes `update_proxies.txt`, a file containing a list of publicly available proxies for demonstration and immediate use. This file is maintained and updated periodically.
-
-* **GUI**: The GUI is pre-configured to use the raw version of this file directly from the GitHub repository, ensuring that users always have a fresh list to start with.
-* **CLI**: The CLI will automatically use the local `update_proxies.txt` file as its default input source if it exists in the project's root directory and no other source is specified.
-
-The direct raw link to the file is:
-`https://raw.githubusercontent.com/vafaeim/advanced-proxy-checker/main/update_proxies.txt`
+This repository includes `update_proxies.txt`, a file containing a list of publicly available proxies for demonstration and immediate use. This file is maintained and updated periodically. The GUI is pre-configured to use the raw version of this file from the GitHub repository, and the CLI will use the local version as its default input source if no other source is specified.
 
 ## Author
 
@@ -172,4 +147,4 @@ Contributions to this project are welcome. If you wish to contribute, please fol
 
 ## License
 
-This project is licensed under the MIT License. Please see the `LICENSE` file in the repository for full details. The MIT License is a permissive free software license originating at the Massachusetts Institute of Technology (MIT) in the late 1980s. As a permissive license, it puts only very limited restriction on reuse and has, therefore, high license compatibility.
+This project is licensed under the MIT License. Please see the `LICENSE` file in the repository for full details. The MIT License is a permissive free software license that puts very limited restriction on reuse and has high license compatibility.

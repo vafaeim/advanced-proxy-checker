@@ -3,3 +3,6 @@
 # pip install -r requirements.txt
 requests==2.31.0
 tqdm==4.66.2
+PySocks==1.7.1
+ttkbootstrap==1.10.1
+matplotlib==3.8.4
