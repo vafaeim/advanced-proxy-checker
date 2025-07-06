@@ -10,6 +10,7 @@ filter them based on performance and location, and save the results.
 import argparse
 import csv
 import json
+import os
 import sys
 import requests
 import statistics
@@ -29,7 +30,7 @@ except ImportError:
 
 # --- Metadata ---
 __author__ = "Amirreza Vafaei Moghadam"
-__version__ = "3.2.0"
+__version__ = "3.2.1"
 __license__ = "MIT"
 __copyright__ = f"Copyright 2025, {__author__}"
 
@@ -37,20 +38,25 @@ __copyright__ = f"Copyright 2025, {__author__}"
 DEFAULT_TIMEOUT = 2
 DEFAULT_WORKERS = 20
 DEFAULT_PING_COUNT = 3
+DEFAULT_PROXY_FILE = "update_proxies.txt"
 
 # --- Helper Functions ---
 
 def get_proxies_from_source(args: argparse.Namespace) -> List[Proxy]:
     """Reads and parses proxy URLs from the source specified in arguments."""
     urls = set()
+    source_name = ""
     try:
         if args.stdin:
+            source_name = "standard input"
             urls = {line.strip() for line in sys.stdin if line.strip()}
         elif args.url:
+            source_name = f"URL '{args.url}'"
             response = requests.get(args.url, timeout=10)
             response.raise_for_status()
             urls = {line.strip() for line in response.text.splitlines() if line.strip()}
-        else:
+        else: # Default to file_path
+            source_name = f"file '{args.file_path}'"
             with open(args.file_path, 'r', encoding='utf-8') as f:
                 urls = {line.strip() for line in f if line.strip()}
     except FileNotFoundError:
@@ -62,7 +68,7 @@ def get_proxies_from_source(args: argparse.Namespace) -> List[Proxy]:
     
     parsed_proxies = [p for p in (parse_proxy_url(url) for url in urls) if p]
     if not parsed_proxies:
-        print("Warning: No valid proxy URLs were found in the source.", file=sys.stderr)
+        print(f"Warning: No valid proxy URLs were found in {source_name}.", file=sys.stderr)
     return parsed_proxies
 
 def save_results(proxies: List[Proxy], output_file: TextIO, format_type: str):
@@ -118,17 +124,17 @@ def main():
     parser = argparse.ArgumentParser(
         description=f"Advanced Proxy Latency Checker (v{__version__}) by {__author__}.",
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog="Example: python src/cli.py proxies.txt --top 10 -o healthy.txt --show-country"
+        epilog=f"Example: python src/cli.py --top 10 -o healthy.txt"
     )
     
     # Argument groups for better organization
-    input_group = parser.add_argument_group('Input Source (Required)')
+    input_group = parser.add_argument_group('Input Source')
     filter_group = parser.add_argument_group('Filtering & Sorting')
     output_group = parser.add_argument_group('Output Configuration')
     conn_group = parser.add_argument_group('Connection Settings')
     
-    source_exclusive_group = input_group.add_mutually_exclusive_group(required=True)
-    source_exclusive_group.add_argument("file_path", nargs='?', help="Path to a file containing proxy URLs, one per line.")
+    source_exclusive_group = input_group.add_mutually_exclusive_group()
+    source_exclusive_group.add_argument("file_path", nargs='?', help=f"Path to a file with proxy URLs. Defaults to '{DEFAULT_PROXY_FILE}' if present.")
     source_exclusive_group.add_argument("--url", help="URL to fetch a list of proxy URLs from.")
     source_exclusive_group.add_argument("--stdin", action='store_true', help="Read proxy URLs from standard input.")
 
@@ -151,6 +157,14 @@ def main():
     
     args = parser.parse_args()
     log = lambda message: print(message, file=sys.stderr) if not args.silent else None
+
+    # --- Handle default input source ---
+    if not args.file_path and not args.url and not args.stdin:
+        if os.path.exists(DEFAULT_PROXY_FILE):
+            args.file_path = DEFAULT_PROXY_FILE
+            log(f"No input source specified. Defaulting to '{DEFAULT_PROXY_FILE}'.")
+        else:
+            parser.error(f"No input source specified. Please provide a file path, --url, --stdin, or ensure '{DEFAULT_PROXY_FILE}' exists in the current directory.")
 
     proxies_to_check = get_proxies_from_source(args)
     if not proxies_to_check:

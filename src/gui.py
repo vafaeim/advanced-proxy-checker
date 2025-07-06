@@ -14,12 +14,13 @@ import threading
 import queue
 import csv
 import json
+import base64
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict
 from typing import List, Optional
 
 # --- Local Imports ---
 from core.checker import Proxy, check_proxy, parse_proxy_url
+from icon import ICON_DATA  # Import the icon data
 
 # --- Metadata ---
 __author__ = "Amirreza Vafaei Moghadam"
@@ -31,7 +32,8 @@ __copyright__ = f"Copyright 2025, {__author__}"
 DEFAULT_TIMEOUT = 2
 DEFAULT_WORKERS = 20
 DEFAULT_PING_COUNT = 3
-URL_PLACEHOLDER = "https://raw.githubusercontent.com/vafaeim/advanced-proxy-checker/refs/heads/main/update_proxies.txt"
+URL_PLACEHOLDER = "https://raw.githubusercontent.com/vafaeim/advanced-proxy-checker/main/update_proxies.txt"
+
 
 class ProxyCheckerGUI(tk.Tk):
     """The main application window for the proxy checker GUI."""
@@ -41,6 +43,14 @@ class ProxyCheckerGUI(tk.Tk):
         self.title(f"Advanced Proxy Latency Checker v{__version__}")
         self.geometry("1100x750")
         self.minsize(800, 600)
+
+        # --- Set Application Icon ---
+        try:
+            icon_bytes = base64.b64decode(ICON_DATA)
+            icon_image = tk.PhotoImage(data=icon_bytes)
+            self.iconphoto(True, icon_image)
+        except tk.TclError:
+            print("Warning: Could not set application icon. Your environment might not support it.")
 
         # --- Member State ---
         self.proxies_to_check: List[Proxy] = []
@@ -330,7 +340,7 @@ class ProxyCheckerGUI(tk.Tk):
     def _process_queue(self):
         """Processes messages from the worker thread queue in the main thread."""
         try:
-            while True:
+            while True: # Process all available messages
                 msg = self.result_queue.get_nowait()
                 if isinstance(msg, Proxy):
                     self.results.append(msg)
@@ -340,8 +350,9 @@ class ProxyCheckerGUI(tk.Tk):
                 elif msg == "SCAN_COMPLETE":
                     self._scan_finished()
         except queue.Empty:
-            pass
+            pass # No more messages
         finally:
+            # Reschedule after 100ms
             self.after(100, self._process_queue)
 
     def _insert_result_into_tree(self, proxy: Proxy):
