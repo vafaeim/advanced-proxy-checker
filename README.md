@@ -1,36 +1,23 @@
 # Advanced Proxy Latency Checker
 
-<p align="center">
-  <a href="https://github.com/vafaeim/advanced-proxy-checker/blob/main/LICENSE">
-    <img alt="License" src="https://img.shields.io/github/license/vafaeim/advanced-proxy-checker?style=for-the-badge&color=yellow">
-  </a>
-  <a href="#">
-    <img alt="Python Version" src="https://img.shields.io/badge/python-3.7+-blue.svg?style=for-the-badge">
-  </a>
-  <a href="#">
-    <img alt="Version" src="https://img.shields.io/badge/version-7.0.1-brightgreen.svg?style=for-the-badge">
-  </a>
-</p>
+## Project Overview
 
-<p align="center">
-  A high-performance, concurrent proxy checker with a feature-rich command-line interface (CLI) and an intuitive, modern graphical user interface (GUI).
-</p>
+The Advanced Proxy Latency Checker is a robust, high-performance software utility designed for network administrators, developers, and security professionals. It provides a comprehensive solution for testing and evaluating proxy servers. The tool is engineered to handle large lists of proxies efficiently, leveraging concurrent processing to deliver rapid results.
 
----
+This project offers two distinct interfaces: a full-featured Graphical User Interface (GUI) for interactive use and a powerful Command-Line Interface (CLI) optimized for scripting, automation, and integration into larger workflows. The primary function is to measure critical performance metrics, including latency (ping) and jitter, and to enrich this data with geolocation information, anonymity level, and the performance of proxies when connecting to external domains.
 
-This tool is engineered for developers, network administrators, and security professionals who need a powerful and reliable utility for testing and evaluating proxy servers. It handles large proxy lists with exceptional speed by leveraging a multi-threaded architecture. The application features two distinct interfaces: a comprehensive CLI for automation and scripting, and a polished GUI, built with `ttkbootstrap`, for a superior interactive experience.
-
-The application goes beyond simple latency checks, providing metrics on jitter, geolocation, anonymity level, and the performance of proxies when connecting to external domains.
-
-## Key Features
+## Core Features
 
 This utility is built with a focus on performance, accuracy, and a professional user experience.
 
 * **Modern Graphical User Interface**:
-    * Built with `ttkbootstrap` for a sleek, modern "superhero" dark theme.
+    * Built with the `ttkbootstrap` library using the "darkly" theme for a sleek, modern, and professional appearance.
     * **Tabbed Interface**: Settings are neatly organized into "Source," "Connection," and "Filtering & Sorting" tabs, providing an uncluttered and intuitive workflow.
     * **Live Dashboard**: A real-time dashboard displays key statistics as the scan progresses, including Total, Healthy, and Failed proxy counts.
-    * **Graphical Analysis**: An "Analysis" tab automatically generates a bar chart of the top countries with healthy proxies, offering instant visual insights into your results.
+    * **Graphical Analysis Dashboard**: A dedicated "Analysis" tab automatically generates multiple charts after a scan, offering instant visual insights into your results, including:
+        * Top 10 Countries by Proxy Count (Bar Chart).
+        * Top 10 Most Used Proxy Ports (Bar Chart).
+        * Anonymity Level Distribution (Pie Chart).
     * **Configuration Persistence**: The application saves all your settings—including window size, last-used inputs, and filter configurations—to a `config.json` file, restoring your workflow seamlessly on the next launch.
 
 * **Advanced Proxy Testing**:
@@ -46,9 +33,19 @@ This utility is built with a focus on performance, accuracy, and a professional 
     * **Flexible Output Formats**: Save filtered and sorted lists of healthy proxies as `.txt`, `.csv`, or `.json`.
     * **Robust Error Handling**: The GUI and CLI provide specific, user-friendly error messages to help diagnose issues with network connections, URLs, or input files.
 
-## Installation
+## Project Architecture
 
-To get started, clone the repository and install the required dependencies. A virtual environment is highly recommended to avoid conflicts with other projects.
+The codebase is organized into a clean, modular structure to promote maintainability and separation of concerns.
+
+* `src/core/checker.py`: This module contains the backend logic. All core functionalities, including the `Proxy` data class, latency measurement, anonymity checking, geolocation fetching, and result filtering, are centralized here.
+* `src/gui.py`: The implementation of the Tkinter-based Graphical User Interface, enhanced with the `ttkbootstrap` library.
+* `src/cli.py`: The implementation of the Command-Line Interface, providing full feature parity for scripting and automation.
+* `src/assets.py`: A dedicated module to store base64-encoded application assets, such as icons.
+* `config.json`: A file created automatically to store user preferences and application state between sessions.
+
+## Installation and Setup
+
+The following steps are required to set up the project locally. A Python version of 3.7 or higher is required. The use of a virtual environment is strongly recommended to isolate dependencies.
 
 1.  **Clone the Repository**:
     ```bash
@@ -91,7 +88,7 @@ The GUI is designed for a rich, interactive experience and provides a complete v
     1.  **Configure Settings**: Navigate through the "Source," "Connection," and "Filtering & Sorting" tabs to set up your scan parameters.
     2.  **Start Scan**: Click the "Start Scan" button. The button will update to "Scanning..." and the dashboard and progress bar will provide live feedback.
     3.  **Control the Scan**: Use the "Pause"/"Resume" and "Stop" buttons to manage the scanning process.
-    4.  **Analyze Results**: View results in the main table. Double-click any row for details, or switch to the "Analysis" tab to see a graphical breakdown.
+    4.  **Analyze Results**: View results in the "Results Table" tab. Double-click any row for details, or switch to the "Analysis" tab to see graphical summaries of the data.
     5.  **Save Results**: Once the scan is complete, use the `File > Save Results...` menu item or the `Ctrl+S` shortcut to save the data.
 
 ### Command-Line Interface (CLI)
