@@ -25,7 +25,7 @@ from core.checker import Proxy, check_proxy, parse_proxy_url, FilterCriteria, fi
 from assets import APP_ICON_DATA
 
 __author__ = "Amirreza Vafaei Moghadam"
-__version__ = "7.0.1"
+__version__ = "8.2.0"
 __license__ = "MIT"
 __copyright__ = f"Copyright 2025, {__author__}"
 
@@ -58,11 +58,24 @@ class ToolTip:
         if self.tooltip: self.tooltip.destroy()
         self.tooltip = None
 
+class ScrolledFrame(ttk.Frame):
+    """A scrollable frame widget."""
+    def __init__(self, parent, *args, **kw):
+        super().__init__(parent, *args, **kw)
+        vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
+        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=False)
+        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0, yscrollcommand=vscrollbar.set)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        vscrollbar.config(command=self.canvas.yview)
+        self.interior = ttk.Frame(self.canvas)
+        self.canvas.create_window(0, 0, window=self.interior, anchor=tk.NW)
+        self.interior.bind('<Configure>', lambda e: self.canvas.config(scrollregion=self.canvas.bbox("all")))
+
 class ProxyCheckerGUI(bst.Window):
     """The main application window for the proxy checker GUI."""
 
     def __init__(self):
-        super().__init__(themename="superhero")
+        super().__init__(themename="darkly")
         self.title(f"Advanced Proxy Latency Checker v{__version__}")
         
         self.proxies_to_check: List[Proxy] = []
@@ -74,6 +87,7 @@ class ProxyCheckerGUI(bst.Window):
         self.total_proxies = 0
         self.checked_proxies = 0
         self.healthy_proxies = 0
+        self.chart_widgets = []
 
         self._load_config()
         self._load_icons()
@@ -116,7 +130,7 @@ class ProxyCheckerGUI(bst.Window):
 
     def _create_menu(self):
         menubar = tk.Menu(self)
-        self.config(menu=menubar)
+        self.configure(menu=menubar)
         self.file_menu = tk.Menu(menubar, tearoff=0)
         self.file_menu.add_command(label="Save Results...", command=self._save_results, accelerator="Ctrl+S", state="disabled")
         self.file_menu.add_separator()
@@ -142,10 +156,12 @@ class ProxyCheckerGUI(bst.Window):
         self._create_results_pane(results_frame)
         paned_window.add(results_frame, weight=3)
         
-        self.status_var = tk.StringVar(value="Ready")
         status_bar = ttk.Frame(main_frame)
         status_bar.pack(side=tk.BOTTOM, fill=tk.X, pady=(5, 0))
+        self.status_var = tk.StringVar(value="Ready")
         ttk.Label(status_bar, textvariable=self.status_var).pack(side=tk.LEFT, padx=5)
+        self.progress_bar = ttk.Progressbar(status_bar, orient="horizontal", mode="determinate")
+        self.progress_bar.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self.progress_text_var = tk.StringVar()
         ttk.Label(status_bar, textvariable=self.progress_text_var).pack(side=tk.RIGHT, padx=5)
 
@@ -260,9 +276,22 @@ class ProxyCheckerGUI(bst.Window):
         ToolTip(cb, "Fetches country data for all proxies. Required for country filtering.")
 
     def _create_results_pane(self, parent: ttk.Frame):
-        parent.rowconfigure(2, weight=1)
+        parent.rowconfigure(1, weight=1)
         parent.columnconfigure(0, weight=1)
         
+        results_notebook = ttk.Notebook(parent)
+        results_notebook.grid(row=1, column=0, sticky="nsew", pady=(10,0))
+        
+        table_frame = ttk.Frame(results_notebook, padding=10)
+        results_notebook.add(table_frame, text="Results Table")
+        table_frame.rowconfigure(1, weight=1)
+        table_frame.columnconfigure(0, weight=1)
+
+        self.analysis_frame = ScrolledFrame(results_notebook)
+        results_notebook.add(self.analysis_frame, text="Analysis")
+        self.analysis_placeholder = ttk.Label(self.analysis_frame.interior, text="Complete a scan to see analysis.", font=("", 12, "italic"))
+        self.analysis_placeholder.pack(expand=True, padx=20, pady=20)
+
         dash_frame = ttk.Frame(parent)
         dash_frame.grid(row=0, column=0, sticky="ew", pady=(0, 10))
         dash_frame.grid_columnconfigure((0,1,2), weight=1)
@@ -272,15 +301,12 @@ class ProxyCheckerGUI(bst.Window):
         ttk.Label(dash_frame, textvariable=self.total_var, font=("-size 12")).pack(side=tk.LEFT, expand=True)
         ttk.Label(dash_frame, textvariable=self.healthy_var, font=("-size 12")).pack(side=tk.LEFT, expand=True)
         ttk.Label(dash_frame, textvariable=self.failed_var, font=("-size 12")).pack(side=tk.LEFT, expand=True)
-
-        self.progress_bar = ttk.Progressbar(parent, orient="horizontal", mode="determinate")
-        self.progress_bar.grid(row=1, column=0, sticky="ew", pady=(0, 10), columnspan=2)
         
-        self.tree = ttk.Treeview(parent, show='headings', bootstyle="primary")
-        self.tree_scroll = ttk.Scrollbar(parent, orient="vertical", command=self.tree.yview, bootstyle="round")
+        self.tree = ttk.Treeview(table_frame, show='headings', bootstyle="primary")
+        self.tree_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview, bootstyle="round")
         self.tree.configure(yscrollcommand=self.tree_scroll.set)
-        self.tree.grid(row=2, column=0, sticky="nsew")
-        self.tree_scroll.grid(row=2, column=1, sticky="ns")
+        self.tree.grid(row=1, column=0, sticky="nsew")
+        self.tree_scroll.grid(row=1, column=1, sticky="ns")
         
         self.context_menu = tk.Menu(self, tearoff=0, bg="#2e2e2e", fg="white")
         self.context_menu.add_command(label="Copy URL", command=self._copy_url)
@@ -404,6 +430,10 @@ class ProxyCheckerGUI(bst.Window):
         self.healthy_var.set("Healthy: 0")
         self.failed_var.set("Failed: 0")
         self.file_menu.entryconfig("Save Results...", state="disabled")
+        for widget in self.chart_widgets:
+            widget.destroy()
+        self.chart_widgets = []
+        self.analysis_placeholder.pack(expand=True)
         if clear_inputs:
             self.url_entry.delete(0, tk.END)
             self.file_path_var.set("")
@@ -433,6 +463,7 @@ class ProxyCheckerGUI(bst.Window):
 
     def _scan_finished(self):
         self._apply_filters_and_sort()
+        self._update_analysis_tab()
         self._set_controls_state_on_scan_end()
         if self.results: self.file_menu.entryconfig("Save Results...", state="normal")
         final_status = "Scan stopped by user." if not self.scan_running.is_set() and self.checked_proxies < self.total_proxies else "Scan complete."
@@ -565,6 +596,60 @@ class ProxyCheckerGUI(bst.Window):
             self.tree.heading(col, text=col + arrow, command=lambda: self._sort_treeview(col, not reverse))
         except (ValueError, tk.TclError):
             pass
+
+    def _update_analysis_tab(self):
+        """Generates and displays charts in the Analysis tab."""
+        for widget in self.chart_widgets:
+            widget.destroy()
+        self.chart_widgets = []
+        self.analysis_placeholder.pack_forget()
+
+        if not self.results:
+            self.analysis_placeholder.pack(expand=True)
+            return
+
+        # Chart 1: Top Countries
+        country_counts = Counter(p.country_code for p in self.results if p.country_code and p.country_code != "N/A")
+        if top_countries := country_counts.most_common(10):
+            self._create_bar_chart(top_countries, "Top 10 Countries by Proxy Count", "Number of Proxies", self.analysis_frame.interior)
+
+        # Chart 2: Anonymity Levels
+        anon_counts = Counter(p.anonymity for p in self.results)
+        if anon_counts:
+            self._create_pie_chart(anon_counts, "Anonymity Level Distribution", self.analysis_frame.interior)
+
+    def _create_bar_chart(self, data, title, xlabel, parent):
+        labels, values = zip(*data)
+        fig = Figure(figsize=(5, 4), dpi=100, facecolor='#2e2e2e')
+        ax = fig.add_subplot(111, facecolor='#2e2e2e')
+        ax.barh(labels, values, color=bst.Style().colors.primary)
+        ax.set_title(title, color='white')
+        ax.set_xlabel(xlabel, color='white')
+        ax.tick_params(axis='x', colors='white')
+        ax.tick_params(axis='y', colors='white')
+        ax.invert_yaxis()
+        for spine in ax.spines.values(): spine.set_edgecolor('#555555')
+        fig.tight_layout()
+        canvas = FigureCanvasTkAgg(fig, master=parent)
+        canvas.draw()
+        widget = canvas.get_tk_widget()
+        widget.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=10)
+        self.chart_widgets.append(widget)
+
+    def _create_pie_chart(self, data, title, parent):
+        labels = list(data.keys())
+        values = list(data.values())
+        fig = Figure(figsize=(5, 4), dpi=100, facecolor='#2e2e2e')
+        ax = fig.add_subplot(111)
+        ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, textprops={'color': "w"})
+        ax.set_title(title, color='white')
+        ax.axis('equal')
+        fig.tight_layout()
+        canvas = FigureCanvasTkAgg(fig, master=parent)
+        canvas.draw()
+        widget = canvas.get_tk_widget()
+        widget.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=10)
+        self.chart_widgets.append(widget)
 
     def _save_results(self):
         if not self.results:
